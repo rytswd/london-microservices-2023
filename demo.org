@@ -1,0 +1,110 @@
+#+title: London Microservices 2023
+#+author: Ryota @rytswd
+
+This is the note used for my presentation at London Microservices 2023.
+
+While this aims to also provide as the reproducible demo steps, the content here is written mainly for the live demo purposes.
+
+* Before We Start: Emacs
+The demo will be using Emacs and Org Mode together. If you are following the steps directly, it should be pretty straightforward. But during the demo, I will be doing the following.
+
+- ~Ctrl + c -> Ctrl + c~: Execute code block
+
+** Example
+These are just to illustrate how demo will proceed. If you are trying to get the demo steps, skip and move onto the next step.
+
+Any command can be invoked directly from Emacs.
+#+begin_src bash
+  pwd
+#+end_src
+
+It is actually run realtime
+#+begin_src bash
+  date
+#+end_src
+
+For some long running ones, I add ~:attach~ keyword to make it asynchronous.
+#+begin_src bash :async
+  sleep 2; date
+#+end_src
+
+* 1. Quick Look at SurrealDB
+SurrealDB has hit the v1.0.0 mark only a few weeks ago as of writing, but it is designed to withstand any sort of workload. But there is also a much simpler setup where you can run it as a standalone server -- obviously a single point of failure if you are to rely on it.
+
+** Start SurrealDB
+It is super simple to get SurrealDB up and running.
+#+begin_src bash :async
+  surreal start --auth --user root --pass root memory
+#+end_src
+
+** Check SurrealDB Status
+Check if the server is ready now.
+#+begin_src bash
+  surreal is-ready --endpoint "http://localhost:8000"
+#+end_src
+
+** Get Some Predefined Data
+Let's get some data into it.
+#+begin_src bash :prologue "exec 2>&1" :epilogue "ret=$? ; [ 0 -eq $ret ] || echo \"exit code: $ret\""
+  surreal import --endpoint "http://localhost:8000" \
+      --user root --pass root \
+      --ns test_ns --db test_db \
+      demo_data.surql
+#+end_src
+
+** Interact to Deep Dive
+From here, there are mainly 3 approaches to take.
+
+1. Use ~surreal sql~ command
+2. Use https://surrealist.app/
+3. Use a language SDK such as Rust, Go, etc.
+
+For further testing, let's check out the first 2 options.
+
+** Kill SurrealDB
+There is a lot happening behind the scenes in SurrealDB, but because of the simple ~surreal start~ command, it can be killed easily, leaving nothing behind.
+
+#+begin_src bash
+  killall surreal
+#+end_src
+
+At this point, SurrealDB is no longer running.
+#+begin_src bash :prologue "exec 2>&1" :epilogue "ret=$? ; [ 0 -eq $ret ] || echo \"exit code: $ret\""
+  surreal is-ready --endpoint "http://localhost:8000"
+#+end_src
+
+* 2. Quick Look at mirrord
+With the power of mirrord, your local environment can essentially work as if it lives in a remote Kubernetes cluster.
+
+** Create Kubernetes Cluster
+You can use any Kubernetes cluster.
+
+*** With KinD
+To be updated
+
+*** With Civo
+Civo provides managed Kubernetes as a service. This is the simple setup and can be off of my machine.
+#+begin_src bash
+  civo kubernetes create london-microservices-demo --region LON1
+#+end_src
+
+Once the cluster is fully up and running, I can save the kubeconfig.
+#+begin_src bash
+  civo kubernetes config london-microservices-demo --region LON1 --save
+#+end_src
+
+*** With other clusters
+Make sure your cluster is available
+
+* 3. Scalable SurrealDB Deployment with mirrord
+Finally, let's combine the two. SurrealDB deployment does not have to be a single process, but can be backed by TiKV to store data reliably. This design allows essentially infinite horizontal scalability.
+
+** How Cluster Was Created
+If you are to create a similar cluster setup, you can follow the below commands.
+
+To be updated
+
+** Connect with mirrord
+
+
+
