@@ -57,6 +57,7 @@ On top of that, there were several completely supplementary tools used:
 - Alacritty
 - Arc Browser
 - Emacs
+- Nix
 
 ### Detailed Steps
 
@@ -72,4 +73,5 @@ To be updated
 
 ## 🔎 References
 
-To be updated
+- Mastering Chaos - A Netflix Guide to Microservices, from QCon San Franciso
+  2016 by Josh Evans - https://youtu.be/CZ3wIuvmHeM?si=BjrBrKWv-kSz006B

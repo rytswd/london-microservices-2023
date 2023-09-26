@@ -18,18 +18,18 @@ Any command can be invoked directly from Emacs.
   pwd
 #+end_src
 
-It is actually run realtime
+It is actually run realtime.
 #+begin_src bash
   date
 #+end_src
 
-For some long running ones, I add ~:attach~ keyword to make it asynchronous.
+For some long running ones, I add ~:attach~ keyword to make it asynchronous. (You can see the actual keyword in the code, but not while presenting.)
 #+begin_src bash :async
   sleep 2; date
 #+end_src
 
 * 1. Quick Look at SurrealDB
-SurrealDB has hit the v1.0.0 mark only a few weeks ago as of writing, but it is designed to withstand any sort of workload. But there is also a much simpler setup where you can run it as a standalone server -- obviously a single point of failure if you are to rely on it.
+SurrealDB has hit the v1.0.0 mark only a few weeks ago as of writing, and it is designed to withstand any sort of workload. But there is a very simple setup where you can run it as a standalone server -- obviously a single point of failure if you are to rely on it.
 
 ** Start SurrealDB
 It is super simple to get SurrealDB up and running.
@@ -62,8 +62,7 @@ From here, there are mainly 3 approaches to take.
 For further testing, let's check out the first 2 options.
 
 ** Kill SurrealDB
-There is a lot happening behind the scenes in SurrealDB, but because of the simple ~surreal start~ command, it can be killed easily, leaving nothing behind.
-
+There is a lot happening behind the scenes with SurrealDB, but because of the simple ~surreal start~ command, it can be killed easily, leaving nothing behind.
 #+begin_src bash
   killall surreal
 #+end_src
@@ -84,7 +83,11 @@ To be updated
 
 *** With Civo
 Civo provides managed Kubernetes as a service. This is the simple setup and can be off of my machine.
-#+begin_src bash
+
+In order to create a Civo cluster, you can do so from https://dashboard.civo.com/kubernetes.
+
+At the same time, Civo provides a CLI for the interaction. After setting it up with ~civo apikey save~, you can create a cluster with a simple command.
+#+begin_src bash :async
   civo kubernetes create london-microservices-demo --region LON1
 #+end_src
 
@@ -94,17 +97,169 @@ Once the cluster is fully up and running, I can save the kubeconfig.
 #+end_src
 
 *** With other clusters
-Make sure your cluster is available
+Make sure your cluster is available, and you select the right Kubernetes context.
+
+** Install Some Apps to Test Against
+This can be anything, but let's test with some simple service deployed in the cluster.
+#+begin_src bash
+  kubectl apply \
+      -f https://raw.githubusercontent.com/rytswd/color-svc/main/k8s/account.yaml \
+      -f https://raw.githubusercontent.com/rytswd/color-svc/main/k8s/color-svc-default.yaml
+#+end_src
+
+At this point, there will be a service called ~color-svc.default.svc.cluster.local~ in the cluster.
+#+begin_src bash
+  kubectl get pods
+  kubectl get svc
+#+end_src
+
+But you cannot interact with it directly.
+#+begin_src bash
+  nslookup color-svc.default.svc.cluster.local
+#+end_src
+
+** Use mirrord to Interact with Cluster Resources
+With mirrord, you can interact with the service as if you are in the cluster.
+
+*** Directly Call Service
+You can directly talk to the cluster resource.
+#+begin_src bash :async
+  mirrord exec -- nslookup color-svc.default.svc.cluster.local
+#+end_src
+
+This is similar to how you can set up a port-forward against a service.
+
+*** Spawn Shell within Cluster
+You can do more than just calling a single service. As an example, spawn a new shell and interact with the cluster.
+#+begin_src bash
+  mirrord exec -- bash
+#+end_src
+
+*** Mirror Traffic
+This is where the name "~mirrord~" makes most sense, and its functionality shines. Whenever a Pod gets some traffic in the cluster, the same request can be "mirrored" into your locally running service.
+
+Before running ~mirrord~, let's deploy a utility Pod to mock service calls within cluster.
+#+begin_src bash
+  kubectl apply \
+      -f https://raw.githubusercontent.com/rytswd/docker-toolkit-images/main/k8s/toolkit-alpine.yaml
+#+end_src
+
+Check that the process is running now.
+#+begin_src bash
+  kubectl get pods
+#+end_src
+
+We will connect to the cluster with ~mirrord~ so that traffic coming into ~color-svc~ within the cluster to be "mirrored" to the locally running service.
+#+begin_src bash
+  mirrord exec --target deployment/color-svc -- SOME_COMMAND
+#+end_src
+
+*** Stealing Traffic
+And it doesn't end there -- we can add another flag ~--steal~ to take over the traffic, so that any service call hitting the Pod will actually hit the local environment instead of the cluster resource.
+
+#+begin_src bash
+  mirrord exec --target deployment/color-svc --steal -- SOME_COMMAND
+#+end_src
 
 * 3. Scalable SurrealDB Deployment with mirrord
-Finally, let's combine the two. SurrealDB deployment does not have to be a single process, but can be backed by TiKV to store data reliably. This design allows essentially infinite horizontal scalability.
+Finally, let's combine the two. SurrealDB deployment does not have to be a single process, and can be backed by TiKV to store data reliably. This design allows essentially infinite horizontal scalability.
 
 ** How Cluster Was Created
+
 If you are to create a similar cluster setup, you can follow the below commands.
 
-To be updated
+*** 0. Create a temporary directory
+#+begin_src bash
+  mkdir /tmp/london-microservices-demo
+  cd /tmp/london-microservices-demo
+
+  ls -aF /tmp/london-microservices-demo
+#+end_src
+
+*** 1. Create cluster
+   NOTE: This step uses Civo for simplicity
+#+begin_src bash :async
+  civo kubernetes create london-microservices-final-demo \
+      --region LON1 \
+      --size "g4s.kube.large" \
+      --nodes 5
+#+end_src
+
+Wait for the cluster to come up, and then get the config
+#+begin_src bash
+  civo kubernetes config london-microservices-final-demo --region LON1 --save
+#+end_src
+
+*** 2. Pull the repository as ~.tar.gz~
+#+begin_src bash :dir /tmp/london-microservices-demo
+  curl -sSL \
+      https://codeload.github.com/rytswd/london-microservices-2023/tar.gz/main \
+      -o london-microservices-2023.tar.gz
+#+end_src
+
+*** 3. Retrieve relevant configurations
+#+begin_src bash :dir /tmp/london-microservices-demo
+  tar -xz -f london-microservices-2023.tar.gz \
+      --strip=2 london-microservices-2023-main/manifests
+#+end_src
+
+*** 4. Check directory
+#+begin_src bash
+  ls -aF /tmp/london-microservices-demo
+#+end_src
+
+*** 5. Create namespace for ~tidb-operator~
+#+begin_src bash :dir /tmp/london-microservices-demo
+  kubectl apply -f ./tidb-operator/namespace.yaml
+#+end_src
+
+*** 6. Apply the manifests to Kubernetes
+   NOTE: This would fail for some setup due to race condition. Simply rerun the command a few times until you get no errors.
+#+begin_src bash :dir /tmp/london-microservices-demo :async
+  kustomize build ./tidb-operator | kubectl apply --server-side -f -
+#+end_src
+
+*** 7. Create namespace for TiKV and SurrealDB
+#+begin_src bash :dir /tmp/london-microservices-demo
+  kubectl apply -f ./tikv/namespace.yaml
+#+end_src
+
+*** 8. Deploy TiKV for SurrealDB
+#+begin_src bash :dir /tmp/london-microservices-demo
+  kustomize build ./tikv | kubectl apply -f -
+#+end_src
+
+*** 9. Deploy SurrealDB
+#+begin_src bash :dir /tmp/london-microservices-demo
+  kubectl apply -f ./surrealdb/installation.yaml
+#+end_src
 
 ** Connect with mirrord
+Connecting to the cluster is the same as other demos.
+#+begin_src bash
+  mirrord exec -- bash
+#+end_src
 
+And once in bash session, we can connect to the cluster with the following.
+#+begin_src bash
+  surreal sql \
+      --endpoint "http://surrealdb-tikv.london-microservices-demo:8000" \
+      --user root \
+      --pass surrealdb \
+      --pretty
+#+end_src
 
+And we can even take it further -- and start SurrealDB server locally, mirroring traffic back to local.
+#+begin_src bash
+  mirrord exec \
+      --target-namespace london-microservices-demo \
+      --target deployment/surrealdb-tikv \
+          -- surreal start \
+                 --auth \
+                 --user root \
+                 --pass surrealdb \
+                 memory
+#+end_src
+
+With the above setup, the local SurrealDB will be duplicating requests coming into the SurrealDB instance in the cluster. If you steal the traffic, you can take over and use your locally running SurrealDB to serve as the main database.
 
