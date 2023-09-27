@@ -1,0 +1,105 @@
+#+title: SurrealDB Command Memo
+
+This is a memo of queries I use during the demo.
+
+#+begin_src
+////--------------------
+/// 1️⃣ Simple Select
+//----------------------
+/*
+select * from person limit 3;
+/**/
+
+
+
+////--------------------
+/// 2️⃣ Select with equality
+//----------------------
+/*
+select * from person where first_name = "Oliver";
+/**/
+
+
+
+////--------------------
+/// 3️⃣ Select with fuzzy search
+//----------------------
+/*
+select * from person where first_name ~ "Ry";
+/**/
+
+
+
+////--------------------
+/// 4️⃣ Select products bought by a particular person
+//----------------------
+// List all product IDs
+/*
+select first_name, last_name, email, 
+    ->order->product
+from person where first_name = "Oliver";
+/**/
+
+// Expand product details
+/*
+select first_name, last_name, email, 
+    ->order->product.*
+from person where first_name = "Oliver";
+/**/
+
+// Aggregate money spent
+/*
+select first_name, last_name, email, 
+    math::sum(->order->product.price) as spent
+from person where first_name = "Oliver";
+/**/
+
+
+
+////--------------------
+/// 5️⃣ Select artist details for products bought
+//----------------------
+// List all artists' names
+/*
+select first_name, last_name, email,
+    ->order->product<-create<-artist.name
+from person where first_name = "Oliver";
+/**/
+
+// List all companies artists belong to
+/*
+select first_name, last_name, email,
+    array::sort::asc(array::distinct(->order->product<-create<-artist.company_name)) as company_name
+from person where first_name = "Oliver";
+/**/
+
+
+
+////--------------------
+/// ℹ️ Other Commands
+//----------------------
+
+// select 1
+/*
+select * from 1;
+/**/
+// or
+/*
+return 1;
+/**/
+
+
+// List all databases within namespace
+/*
+info for namespace;
+/**/
+
+
+// List all tables within database
+/*
+info for database;
+/**/
+
+#+end_src
+
+
