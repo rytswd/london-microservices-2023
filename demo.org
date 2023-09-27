@@ -270,3 +270,10 @@ And we can even take it further -- and start SurrealDB server locally, mirroring
 
 With the above setup, the local SurrealDB will be duplicating requests coming into the SurrealDB instance in the cluster. If you steal the traffic, you can take over and use your locally running SurrealDB to serve as the main database.
 
+* Clean Up
+If you followed step by step up until here, you would still have 2 Kubernetes clusters, some ~mirrord~ processes. For ~mirrord~, it is as simple as sending
+
+#+begin_src bash
+  killall mirrord
+#+end_src
+
