@@ -263,7 +263,6 @@ And we can even take it further -- and start SurrealDB server locally, mirroring
       --target deployment/surrealdb-tikv \
           -- surreal start \
                  --auth \
-                 -l debug \
                  --user root \
                  --pass surrealdb \
                  memory
