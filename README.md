@@ -1,6 +1,6 @@
 # London Microservices September 2023
 
-![slide](https://github.com/rytswd/london-microservices-2023/assets/23435099/ead4626c-bab1-425a-8132-95e8be414dc5)
+![slide](https://github.com/rytswd/london-microservices-2023/assets/23435099/4308e7f6-6b00-49a6-93f0-8e01522906b0)
 
 > Date: 27th September, 2023
 >
