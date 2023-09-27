@@ -268,6 +268,25 @@ And we can even take it further -- and start SurrealDB server locally, mirroring
                  memory
 #+end_src
 
+Also, let's add another field requirement to see how it would behave.
+We can connect to the local instance:
+#+begin_src bash
+  surreal sql --endpoint "http://localhost:8000" \
+      --user root \
+      --pass surrealdb \
+      --namespace demo_namespace \
+      --database demo_database \
+      --pretty
+#+end_src
+
+And send the following SurrealQL to define extra configuration.
+#+begin_src
+  -- Give the user table an email field. Store it in a string
+  DEFINE FIELD email ON TABLE user TYPE string
+  -- Check if the value is a properly formatted email address
+    ASSERT string::is::email($value);
+#+end_src
+
 With the above setup, the local SurrealDB will be duplicating requests coming into the SurrealDB instance in the cluster. If you steal the traffic, you can take over and use your locally running SurrealDB to serve as the main database.
 
 * Clean Up
