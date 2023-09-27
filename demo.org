@@ -23,7 +23,7 @@ It is actually run realtime.
   date
 #+end_src
 
-For some long running ones, I add ~:attach~ keyword to make it asynchronous. (You can see the actual keyword in the code, but not while presenting.)
+For some long running ones, I add ~:async~ keyword to make it asynchronous. (You can see the actual keyword in the code, but not while presenting.)
 #+begin_src bash :async
   sleep 2; date
 #+end_src
