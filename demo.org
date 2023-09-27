@@ -34,7 +34,7 @@ SurrealDB has hit the v1.0.0 mark only a few weeks ago as of writing, and it is 
 ** Start SurrealDB
 It is super simple to get SurrealDB up and running.
 #+begin_src bash :async
-  surreal start --auth --user root --pass root memory
+  surreal start --auth --user root --pass surrealdb memory
 #+end_src
 
 ** Check SurrealDB Status
@@ -44,12 +44,12 @@ Check if the server is ready now.
 #+end_src
 
 ** Get Some Predefined Data
-Let's get some data into it.
+Let's get some data into it. SurrealDB provides some demo data to play with. We got the copy of that, and can import it here.
 #+begin_src bash :prologue "exec 2>&1" :epilogue "ret=$? ; [ 0 -eq $ret ] || echo \"exit code: $ret\""
   surreal import --endpoint "http://localhost:8000" \
-      --user root --pass root \
-      --ns test_ns --db test_db \
-      demo_data.surql
+      --user root --pass surrealdb \
+      --ns test_namespace --db test_database \
+      surreal_deal_v1.surql
 #+end_src
 
 ** Interact to Deep Dive
