@@ -10,7 +10,7 @@
 
 Official Website: https://www.meetup.com/london-microservices/events/296099628/
 
-Original Recording: _To be updated_
+Original Recording: _To be confirmed, may not be available_
 
 Original Slide: https://dub.sh/london-microservices-sep-2023-spof
 
@@ -46,10 +46,12 @@ While you may not need all of the tools, the original demo used the following
 tools:
 
 - `kubectl`
+- `kustomize`
 - `helm`
 - `k9s`
-- `surreal` (from SurrealDB)
+- `surreal`
 - `mirrord`
+- `kubectx`
 - `civo` (from Civo)
 
 On top of that, there were several completely supplementary tools used:
