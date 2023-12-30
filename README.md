@@ -10,11 +10,9 @@
 
 Official Website: https://www.meetup.com/london-microservices/events/296099628/
 
-Original Recording: _To be confirmed, may not be available_
+Original Recording: Not Available
 
 Original Slide: https://dub.sh/london-microservices-sep-2023-spof
-
-Follow-up Video: _To be confirmed_
 
 ## 🌄 About This Repository
 
@@ -26,7 +24,7 @@ Microservices Meetup September 2023.
 
 ## 🛝 About Demo
 
-_To be updated_
+All the demo steps are provided in [demo.org](demo.org).
 
 ### Prerequisites
 
@@ -61,17 +59,10 @@ On top of that, there were several completely supplementary tools used:
 - Emacs
 - Nix
 
-### Detailed Steps
-
-Please check out [Demo Steps](demo.org) for details.
-
-### Clean Up
-
-To be updated
-
 ### Troubleshooting
 
-To be updated
+
+If you found any misbehaviour with the setup, please feel free to create an issue. While I'm not intending to maintain with the latest details here, I still check activities and may be able to help.
 
 ## 🔎 References
 
